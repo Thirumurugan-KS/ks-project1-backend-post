@@ -1,19 +1,28 @@
 const express = require("express")
-const Employee = require("../models/employeeModel")
+const pool = require("../Config/postConfig")
 const asyncHandler = require('express-async-handler')
 
 //put request
 //returns user 
 
+exports.createEmployeeTable =  async(req,res)=>{
+
+
+    const temp = await pool.query(`CREATE TABLE employees(name VARCHAR(10),gender VARCHAR(10),designation VARCHAR(10),city VARCHAR(10));`)
+
+
+res.json({
+    "success" : "true"
+})
+
+}
+
 exports.createEmployee =  asyncHandler(async(req,res)=>{
     try{
      const { name , gender , designation , city } = req.body
-     const employee = await Employee.create({
-         "name" : name,
-         "gender" : gender,
-         "designation" : designation,
-         "city" : city
-     })  
+     const data = await pool.query(`INSERT INTO employees (name,gender,designation,city) VALUES ('${name}','${gender}','${designation}','${city}') RETURNING *`)
+     console.log(data)
+     const employee = data.rows[0]
      res.json(employee)
     }
     catch(error){
@@ -33,13 +42,11 @@ exports.updateEmployee =  asyncHandler(async(req,res)=>{
 
         const id = req.params.id
         const { name , gender , designation , city } = req.body
-        const employee = await Employee.findById(id)
-        employee.name = name
-        employee.gender = gender
-        employee.designation = designation
-        employee.city = city
-        await employee.save()
-        res.json(employee)
+        const employee = await pool.query(`UPDATE employees 
+        SET name = '${name}', gender = '${gender}', designation = '${designation}', city = '${city}'
+        WHERE id='${id}' 
+        RETURNING *`)
+        res.json(employee.rows[0])
 
     }
     catch(error){
@@ -58,8 +65,7 @@ exports.deleteEmployee = asyncHandler(async(req,res)=>{
     try{
 
         const id = req.params.id
-        const employee = await Employee.findById(id)
-        await employee.remove()
+        const employee = await pool.query(`DELETE from employees WHERE id='${id}'`)
         res.json({
             "Status" : "ok"
         })
@@ -81,8 +87,8 @@ exports.deleteEmployee = asyncHandler(async(req,res)=>{
 
     try{
 
-        const employee = await Employee.find({})
-        res.json(employee)
+        const employee = await pool.query('SELECT * FROM employees')
+        res.json(employee.rows)
     }
     catch(error){
         throw new Error(error.message)

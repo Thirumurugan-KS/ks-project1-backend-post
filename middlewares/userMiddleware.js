@@ -1,14 +1,20 @@
 const User = require("../models/userModels")
+const pool = require("../Config/postConfig")
+const jwt = require("jsonwebtoken")
 exports.isLogin = async(req,res,next) =>{
-    const jwt = require("jsonwebtoken")
+    
     try{
 
         if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
 
             let token = req.headers.authorization.split(" ")[1]
             let dectoken = jwt.verify(token , process.env.SECRET_WORD)
+           
             let id = dectoken.id
-            const user = await User.findById(id)
+            
+            const data = await pool.query(`SELECT * FROM users WHERE id='${id}'`)
+            const user = data.rows
+
             if(user)
             {
                 next()

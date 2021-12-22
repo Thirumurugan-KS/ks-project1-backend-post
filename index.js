@@ -3,13 +3,10 @@ const cors = require("cors")
 const fileUpload = require("express-fileupload")
 require('dotenv').config()
 const app = express()
-const { config } = require("./Config/mongooseConfig")
 
 const userRoute = require("./routes/userRoute")
 const employeeRoute = require("./routes/employeeRoute")
 const { customError } = require("./middlewares/customMessage")
-
-config()
 
 app.use(express.json())
 app.use(cors())

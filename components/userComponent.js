@@ -1,4 +1,4 @@
-const User = require("../models/userModels")
+const pool = require("../Config/postConfig")
 const jwt = require("jsonwebtoken")
 const asyncHandler = require('express-async-handler')
 
@@ -9,10 +9,10 @@ exports.home =  (req,res)=>{
 }
 
 exports.createUser =  async(req,res)=>{
-const user = await User.create({
-    "name" : "thiru",
-    "password" : "passowrd"
-})  
+
+
+const user = await pool.query(`INSERT INTO users (name,password) VALUES ('admin','admin')`)
+
 res.json({
     "success" : "true"
 })
@@ -22,17 +22,20 @@ res.json({
 
 exports.signIn =  asyncHandler(async(req,res)=>{
 
-
+    
 
     const { name , password } = req.body
 
-    const user = await User.findOne({"name" : name})
+    const data = await pool.query(`SELECT * FROM users WHERE name='${name}';`)
+
+    const user = data.rows[0]
 
     if(user){
 
        if(user.password===password){
-        const token = await jwt.sign({ id : user._id} , process.env.SECRET_WORD)
-        res.json({"id" : user._id ,
+        const token = await jwt.sign({ id : user.id} , process.env.SECRET_WORD)
+
+        res.json({"id" : user.id ,
            "name" : user.name, 
             'token' : token})
        }
@@ -41,8 +44,7 @@ exports.signIn =  asyncHandler(async(req,res)=>{
            throw new Error("User or Password is not correct")
            return
            
-       }
-        
+       } 
     }
     else
     {
