@@ -30,6 +30,7 @@ exports.signIn =  asyncHandler(async(req,res)=>{
 
     const user = data.rows[0]
 
+
     if(user){
 
        if(user.password===password){
